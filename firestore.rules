@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && isValidId(userId)
+        && incoming().userId == userId
+        && incoming().email is string
+        && incoming().email.size() <= 256;
+      allow update: if isOwner(userId)
+        && incoming().userId == existing().userId;
+      allow delete: if false;
+    }
+
+    // Private Property Legitimacy Validations & Deep Research Records
+    match /property_validations/{validationId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn()
+        && isValidId(validationId)
+        && incoming().userId == request.auth.uid
+        && incoming().propertyId is string && incoming().propertyId.size() <= 128
+        && incoming().legitimacyScore is number && incoming().legitimacyScore >= 0 && incoming().legitimacyScore <= 100
+        && incoming().verdict is string && incoming().verdict.size() <= 64;
+      allow update: if isSignedIn()
+        && existing().userId == request.auth.uid
+        && incoming().userId == existing().userId
+        && incoming().propertyId == existing().propertyId;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    // Private Saved Watchlist Properties
+    match /saved_properties/{savedId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn()
+        && isValidId(savedId)
+        && incoming().userId == request.auth.uid
+        && incoming().propertyId is string && incoming().propertyId.size() <= 128
+        && incoming().propertyTitle is string && incoming().propertyTitle.size() <= 256;
+      allow update: if isSignedIn()
+        && existing().userId == request.auth.uid
+        && incoming().userId == existing().userId
+        && incoming().propertyId == existing().propertyId;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Authenticated investor profile",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The Firebase Auth UID of the user"
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Account creation timestamp"
+        }
+      },
+      "required": ["userId", "email"]
+    },
+    "PropertyValidation": {
+      "title": "PropertyValidation",
+      "description": "Private property legitimacy audit and deep research record",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID"
+        },
+        "propertyId": {
+          "type": "string",
+          "description": "ID of the validated property"
+        },
+        "propertyTitle": {
+          "type": "string",
+          "description": "Title of the subject property"
+        },
+        "county": {
+          "type": "string",
+          "description": "County of the property"
+        },
+        "state": {
+          "type": "string",
+          "description": "State code"
+        },
+        "legitimacyScore": {
+          "type": "number",
+          "description": "Legitimacy confidence score 0 to 100"
+        },
+        "verdict": {
+          "type": "string",
+          "description": "Legitimacy verdict e.g. VERIFIED_LEGITIMATE"
+        },
+        "riskLevel": {
+          "type": "string",
+          "description": "Risk assessment level"
+        },
+        "bioscienceScore": {
+          "type": "number",
+          "description": "Biological and soil chemistry integrity score"
+        },
+        "titleVerified": {
+          "type": "boolean",
+          "description": "Whether county title docket and APN are verified"
+        },
+        "soilIntegrityVerified": {
+          "type": "boolean",
+          "description": "Whether soil and agronomic health are validated"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Private investor due diligence notes"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Audit creation timestamp"
+        }
+      },
+      "required": ["userId", "propertyId", "legitimacyScore", "verdict"]
+    },
+    "SavedProperty": {
+      "title": "SavedProperty",
+      "description": "User bookmarked property in watchlist",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID"
+        },
+        "propertyId": {
+          "type": "string",
+          "description": "ID of the saved property"
+        },
+        "propertyTitle": {
+          "type": "string",
+          "description": "Title of the saved property"
+        },
+        "askingOrOpeningBid": {
+          "type": "number",
+          "description": "Opening bid or asking price"
+        },
+        "estimatedARV": {
+          "type": "number",
+          "description": "Estimated after repair value"
+        },
+        "distressType": {
+          "type": "string",
+          "description": "Distress category"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Investor watchlist notes"
+        },
+        "savedAt": {
+          "type": "string",
+          "description": "Timestamp when added to watchlist"
+        }
+      },
+      "required": ["userId", "propertyId", "propertyTitle"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Authenticated user profile records"
+    },
+    "/property_validations/{validationId}": {
+      "schema": "PropertyValidation",
+      "description": "Private legitimacy validation and deep research audit records"
+    },
+    "/saved_properties/{savedId}": {
+      "schema": "SavedProperty",
+      "description": "Private investor property watchlists"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "TerraYield AI — Investment Property & Ag Intelligence Finder",
+  "description": "AI-powered investment property finder analyzing auctions, liens, foreclosures, unique local business models with citings, soil taxonomy, food crop suitability, zoning codes, and financial restrictions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
