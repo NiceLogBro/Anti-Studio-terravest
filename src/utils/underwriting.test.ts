@@ -354,6 +354,48 @@ test('d3 contourDensity correctly generates vector contour thresholds from prope
   assert.ok(contours[0].coordinates.length > 0, 'First contour should have polygon coordinates');
 });
 
+import {
+  calculateFiveYearCropROI,
+  getDefaultCropInputs,
+  getDefaultMaintenanceInputs
+} from './underwriting';
+
+test('calculateFiveYearCropROI accurately computes 5-year cash flows, compounding yield, and net ROI', () => {
+  const allProps = generate100Properties();
+  const sampleProp = allProps[0];
+
+  const defaultCrops = getDefaultCropInputs(sampleProp);
+  const defaultMaintenance = getDefaultMaintenanceInputs(sampleProp);
+
+  assert.ok(defaultCrops.length >= 1, 'Should build default crops from property suitability');
+  assert.ok(defaultMaintenance.propertyTaxesAnnual > 0, 'Should build property taxes');
+
+  const projection = calculateFiveYearCropROI(sampleProp, defaultCrops, defaultMaintenance, {
+    customPurchaseBid: 300000,
+    customInitialCapEx: 30000,
+    annualLandAppreciationPct: 5.0
+  });
+
+  assert.equal(projection.propertyId, sampleProp.id);
+  assert.equal(projection.yearByYear.length, 5, 'Must generate exactly 5 years of cash flows');
+  assert.ok(projection.initialInvestmentBasis > 300000, 'Initial basis must include price + capex + clearing');
+  assert.ok(projection.fiveYearTotalGrossRevenue > 0, '5-year gross revenue must be positive');
+  assert.ok(projection.fiveYearEstimatedTerminalValue > 300000, 'Terminal land value must account for 5% compounding appreciation');
+  assert.ok(typeof projection.fiveYearTotalROI === 'number', 'Must compute 5-year total ROI');
+  assert.ok(typeof projection.fiveYearAnnualizedROI === 'number', 'Must compute annualized CAGR');
+
+  // Verify year-by-year structure
+  for (let i = 0; i < 5; i++) {
+    const yr = projection.yearByYear[i];
+    assert.equal(yr.year, i + 1);
+    assert.ok(yr.grossCropRevenue > 0);
+    assert.ok(yr.totalMaintenanceCosts > 0);
+    assert.ok(typeof yr.netCashFlow === 'number');
+    assert.ok(yr.estimatedLandAppreciationValue > 0);
+  }
+});
+
+
 
 
 

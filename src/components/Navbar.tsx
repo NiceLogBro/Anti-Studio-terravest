@@ -27,6 +27,8 @@ interface NavbarProps {
   onOpenSavedModal: () => void;
   onOpenVault: () => void;
   onOpenChat: () => void;
+  onOpenLiveScanner?: () => void;
+  onOpenProjectionTool?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -38,7 +40,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCustomAnalyzer,
   onOpenSavedModal,
   onOpenVault,
-  onOpenChat
+  onOpenChat,
+  onOpenLiveScanner,
+  onOpenProjectionTool
 }) => {
   const { user, signIn, logOut, validations } = useAuth();
 
@@ -183,6 +187,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
+          {/* Verified Live Listing Finder with Deep Internet Scanning */}
+          {onOpenLiveScanner && (
+            <button
+              onClick={onOpenLiveScanner}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 transition shadow-xs cursor-pointer"
+              title="Verified Live Listing Finder with Deep Internet Scanning"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span className="hidden sm:inline">Live Scanner</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-600 text-white">LIVE</span>
+            </button>
+          )}
+
           {/* AI Copilot Toggle */}
           <button
             onClick={onOpenChat}

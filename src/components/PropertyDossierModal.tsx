@@ -35,22 +35,26 @@ import {
   calculateTotalGrantFunding
 } from '../utils/underwriting';
 
+import { CropROIProjectionTool } from './CropROIProjectionTool';
+
 interface PropertyDossierModalProps {
   property: InvestmentProperty;
   onClose: () => void;
   onValidateLegitimacy?: (prop: InvestmentProperty) => void;
   onOpenChat?: (initialQuestion?: string) => void;
+  initialTab?: TabType;
 }
 
-type TabType = 'overview' | 'business' | 'soil' | 'zoning' | 'grants' | 'underwriting' | 'advisor';
+type TabType = 'overview' | 'projections' | 'business' | 'soil' | 'zoning' | 'grants' | 'underwriting' | 'advisor';
 
 export const PropertyDossierModal: React.FC<PropertyDossierModalProps> = ({
   property,
   onClose,
   onValidateLegitimacy,
   onOpenChat,
+  initialTab = 'overview',
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
 
   // Interactive Underwriting Calculator State
@@ -257,6 +261,23 @@ export const PropertyDossierModal: React.FC<PropertyDossierModalProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('projections')}
+            className={`py-3 px-3.5 border-b-2 transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === 'projections'
+                ? 'border-rose-600 text-rose-700 font-bold bg-white'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <TrendingUp className="w-4 h-4 text-purple-600" />
+            <span className="flex items-center gap-1.5">
+              <span>5-Year Crop ROI Projections</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-purple-100 text-purple-900 font-black">
+                NEW
+              </span>
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('business')}
             className={`py-3 px-3.5 border-b-2 transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'business'
@@ -453,6 +474,13 @@ export const PropertyDossierModal: React.FC<PropertyDossierModalProps> = ({
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB: 5-YEAR CROP ROI & MAINTENANCE PROJECTION TOOL */}
+          {activeTab === 'projections' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <CropROIProjectionTool property={property} />
             </div>
           )}
 

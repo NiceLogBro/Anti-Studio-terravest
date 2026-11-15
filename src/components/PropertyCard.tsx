@@ -28,6 +28,7 @@ interface PropertyCardProps {
   isSelectedForCompare: boolean;
   onToggleCompare: (propId: string) => void;
   onValidateLegitimacy?: (prop: InvestmentProperty) => void;
+  onOpenProjections?: (prop: InvestmentProperty) => void;
 }
 
 export const PropertyCard: React.FC<PropertyCardProps> = ({
@@ -37,7 +38,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onToggleSave,
   isSelectedForCompare,
   onToggleCompare,
-  onValidateLegitimacy
+  onValidateLegitimacy,
+  onOpenProjections
 }) => {
   const { getValidation } = useAuth();
   const existingVal = getValidation(property.id);
@@ -320,14 +322,32 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           </button>
         ) : null}
 
-        {/* Primary Action Button */}
-        <button
-          onClick={() => onSelect(property)}
-          className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-600 via-rose-600 to-purple-700 hover:from-amber-500 hover:to-rose-600 text-white transition flex items-center justify-center gap-2 shadow-sm group-hover:shadow-md cursor-pointer"
-        >
-          <span>Examine Property Dossier</span>
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-        </button>
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-2">
+          {onOpenProjections ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenProjections(property);
+              }}
+              className="py-2.5 px-3 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+              title="Calculate 5-Year ROI with custom crop yields and maintenance costs"
+            >
+              <TrendingUp className="w-3.5 h-3.5 text-purple-700" />
+              <span>5-Yr Crop ROI</span>
+            </button>
+          ) : null}
+
+          <button
+            onClick={() => onSelect(property)}
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-600 via-rose-600 to-purple-700 hover:from-amber-500 hover:to-rose-600 text-white transition flex items-center justify-center gap-1.5 shadow-sm group-hover:shadow-md cursor-pointer ${
+              onOpenProjections ? '' : 'col-span-2'
+            }`}
+          >
+            <span>Dossier</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
       </div>
     </div>
   );

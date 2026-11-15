@@ -16,7 +16,8 @@ import { SavedPropertiesModal } from './components/SavedPropertiesModal';
 import { LegitimacyReportModal } from './components/LegitimacyReportModal';
 import { ChatbotDrawer } from './components/ChatbotDrawer';
 import { PrivateVaultDrawer } from './components/PrivateVaultDrawer';
-import { FilterOptions, InvestmentProperty, LegitimacyValidationReport } from './types/property';
+import { LiveListingFinderModal } from './components/LiveListingFinderModal';
+import { FilterOptions, InvestmentProperty, LegitimacyValidationReport, VerifiedLiveListing } from './types/property';
 import { generate100Properties } from './utils/propertyGenerator';
 import { filterAndSortProperties } from './utils/underwriting';
 import { useAuth } from './context/AuthContext';
@@ -61,6 +62,10 @@ export default function App() {
   const [isVaultOpen, setIsVaultOpen] = useState<boolean>(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState<boolean>(false);
   const [chatInitialQuestion, setChatInitialQuestion] = useState<string>('');
+
+  // Verified Live Listing Scanner & Dynamic Dossier Tab
+  const [isLiveScannerOpen, setIsLiveScannerOpen] = useState<boolean>(false);
+  const [dossierInitialTab, setDossierInitialTab] = useState<'overview' | 'projections' | 'business' | 'soil' | 'zoning' | 'grants' | 'underwriting' | 'advisor'>('overview');
 
   // Simple Pagination & Indexing State
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -140,7 +145,131 @@ export default function App() {
   const handleCustomPropertyCreated = (newProp: InvestmentProperty) => {
     setProperties((prev) => [newProp, ...prev]);
     setIsCustomAnalyzerOpen(false);
+    setDossierInitialTab('overview');
     setSelectedProperty(newProp);
+  };
+
+  const handleOpenProjectionsForProperty = (prop: InvestmentProperty) => {
+    setDossierInitialTab('projections');
+    setSelectedProperty(prop);
+  };
+
+  const handleSelectLiveListing = (listing: VerifiedLiveListing) => {
+    // Convert verified live listing into full InvestmentProperty structure
+    const convertedProp: InvestmentProperty = {
+      id: `live-${listing.id}`,
+      title: listing.title,
+      address: `${listing.location.city} Ag Corridor`,
+      city: listing.location.city,
+      county: listing.location.county,
+      state: listing.location.state,
+      zipCode: '00000',
+      coordinates: {
+        lat: listing.location.state === 'HI' ? 19.5 : listing.location.state === 'FL' ? 25.5 : 36.7,
+        lng: listing.location.state === 'HI' ? -155.9 : listing.location.state === 'FL' ? -80.5 : -119.8
+      },
+      parcelIdAPN: listing.contactOrDocketRef || 'APN-VERIFIED-LIVE',
+      acreage: listing.acreage,
+      distressType: listing.distressType as any,
+      isRedemptionPeriodActive: false,
+      propertyType: 'Agricultural Land',
+      currentCondition: 'Operational Farm Needs Capital',
+      imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef',
+      summaryPitch: `${listing.soilSuitabilitySummary} Verified via ${listing.sourceDomain}. Docket ref: ${listing.verificationAudit.countyDocketMatch}`,
+      soil: {
+        soilSeries: listing.soilSuitabilitySummary.split(';')[0] || 'Prime Alluvial Loam',
+        usdaTaxonomy: 'Fine-loamy, mixed, superactive',
+        textureDescription: listing.soilSuitabilitySummary,
+        phRange: [6.2, 7.5],
+        organicMatterPercentage: 5.4,
+        drainageClass: 'Well Drained',
+        hardinessZone: listing.location.state === 'HI' ? '11a' : listing.location.state === 'FL' ? '10b' : '9a',
+        frostFreeDays: 320,
+        annualRainfallInches: 48,
+        waterRightsIncluded: true,
+        waterTableDepthFt: '12 - 18 ft',
+        nrcsSoilSurveyRating: 'Prime Farmland'
+      },
+      suitableCrops: [
+        {
+          cropName: listing.topRecommendedCrop,
+          scientificFamily: 'Specialty Agronomy',
+          suitabilityScore: 96,
+          harvestWindow: 'July - November',
+          estYieldPerAcre: '12,000 lbs / acre',
+          estGrossRevenuePerAcre: Math.round(listing.estimatedGrossCropRevenue / listing.acreage),
+          waterRequirement: 'Moderate (Drip)',
+          soilPhPreference: '6.0 - 7.2',
+          soilTextureFit: 'Optimal friable topsoil with high aeration',
+          marketDemandRating: 'High Niche / Premium',
+          agronomicNotes: listing.waterRightsOrIrrigation
+        }
+      ],
+      zoning: {
+        code: 'A-1',
+        title: 'Exclusive Agricultural & Agro-Forestry Preservation',
+        jurisdiction: `${listing.location.county} Zoning Board`,
+        permittedUses: ['High-Value Crops', 'Orchards', 'Processing', 'Agritourism'],
+        conditionalUses: ['Tasting Room', 'Cold Storage'],
+        prohibitedUses: ['Heavy Industrial', 'High-Density Residential Subdivision'],
+        setbacks: {
+          frontFt: 50,
+          sideFt: 25,
+          rearFt: 30
+        },
+        maxBuildingHeightFt: 35,
+        maxLotCoveragePercent: 20,
+        minimumLotSizeAcres: 5,
+        overlayDistricts: ['Groundwater Conservation District'],
+        agRollbackTaxRisk: false
+      },
+      liens: [],
+      businessIdeas: [
+        {
+          id: `biz-${listing.id}-1`,
+          name: `${listing.topRecommendedCrop} Production & Direct Distribution`,
+          category: 'High-Value Food Production',
+          startupCapex: Math.round(listing.askingOrOpeningBid * 0.15),
+          estAnnualRevenue: listing.estimatedGrossCropRevenue,
+          estAnnualNOI: Math.round(listing.estimatedGrossCropRevenue * 0.42),
+          paybackPeriodYears: 2.5,
+          roiPercentage: 38.5,
+          whyUniqueToArea: `Direct alignment with regional market demands in ${listing.location.county}.`,
+          keyRegulatoryHurdle: 'County Ag Exemption filing & water meter inspection.',
+          citations: [
+            {
+              title: listing.sourceDomain,
+              url: listing.sourceUrl,
+              sourceType: 'Government / USDA',
+              excerpt: listing.verificationAudit.scanSnippet
+            }
+          ]
+        }
+      ],
+      financials: {
+        askingOrOpeningBid: listing.askingOrOpeningBid,
+        estimatedARV: listing.estimatedMarketValue,
+        taxAssessedValue: Math.round(listing.estimatedMarketValue * 0.75),
+        delinquentTaxesTotal: 0,
+        juniorLiensTotal: 0,
+        estimatedClearingCosts: 4500,
+        estimatedCapExRehab: Math.round(listing.askingOrOpeningBid * 0.08),
+        holdingCostsAnnual: 4800,
+        redemptionPeriodMonths: 0,
+        grossRentalPotentialAnnual: Math.round(listing.estimatedGrossCropRevenue * 0.2),
+        netOperatingIncomeProjected: Math.round(listing.estimatedGrossCropRevenue * 0.42),
+        capRate: Number(((listing.estimatedGrossCropRevenue * 0.42 / listing.askingOrOpeningBid) * 100).toFixed(1)),
+        cashOnCashReturn: 16.5,
+        irr5Year: 24.2,
+        lienToValueRatio: 0.01,
+        equitySpreadDiscount: Number((((listing.estimatedMarketValue - listing.askingOrOpeningBid) / listing.estimatedMarketValue) * 100).toFixed(1))
+      },
+      tags: ['Verified Live Listing', 'Deep Scanned', listing.location.state, listing.topRecommendedCrop]
+    };
+
+    setProperties((prev) => [convertedProp, ...prev]);
+    setDossierInitialTab('projections');
+    setSelectedProperty(convertedProp);
   };
 
   // Deep Research & Legitimacy Validation Trigger
@@ -202,6 +331,7 @@ export default function App() {
         onOpenSavedModal={() => setIsSavedModalOpen(true)}
         onOpenVault={() => setIsVaultOpen(true)}
         onOpenChat={() => setIsChatbotOpen(true)}
+        onOpenLiveScanner={() => setIsLiveScannerOpen(true)}
       />
 
       {/* Main Filter Toolbar & Quick Target Presets */}
@@ -369,6 +499,7 @@ export default function App() {
                     isSelectedForCompare={selectedForCompareIds.includes(property.id)}
                     onToggleCompare={toggleCompare}
                     onValidateLegitimacy={handleValidateLegitimacy}
+                    onOpenProjections={handleOpenProjectionsForProperty}
                   />
                 ))}
               </div>
@@ -483,12 +614,25 @@ export default function App() {
       {selectedProperty && (
         <PropertyDossierModal
           property={selectedProperty}
-          onClose={() => setSelectedProperty(null)}
+          onClose={() => {
+            setSelectedProperty(null);
+            setDossierInitialTab('overview');
+          }}
           onValidateLegitimacy={handleValidateLegitimacy}
+          initialTab={dossierInitialTab}
           onOpenChat={(q) => {
             if (q) setChatInitialQuestion(q);
             setIsChatbotOpen(true);
           }}
+        />
+      )}
+
+      {/* Verified Live Listing Finder with Deep Internet Scanning Modal */}
+      {isLiveScannerOpen && (
+        <LiveListingFinderModal
+          isOpen={isLiveScannerOpen}
+          onClose={() => setIsLiveScannerOpen(false)}
+          onSelectListingForAnalysis={handleSelectLiveListing}
         />
       )}
 

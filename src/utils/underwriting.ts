@@ -259,3 +259,243 @@ export function filterAndSortProperties(
       }
     });
 }
+
+import {
+  CropProjectionInput,
+  MaintenanceExpenseInput,
+  CropYearProjection,
+  FiveYearProjectionResult
+} from '../types/property';
+
+/**
+ * Calculates 5-Year Financial Projection incorporating:
+ * - Crop yield growth (maturity curve)
+ * - Unit market price inflation
+ * - Variable crop production expenses
+ * - Itemized property & equipment maintenance costs
+ * - Inflation escalation on maintenance
+ * - Land grant subsidies & capital offsets
+ * - Property terminal land appreciation (compounded)
+ * - Returns 5-Year CAGR, Total ROI, and Break-Even timeline
+ */
+export function calculateFiveYearCropROI(
+  property: InvestmentProperty,
+  crops: CropProjectionInput[],
+  maintenance: MaintenanceExpenseInput,
+  options?: {
+    customPurchaseBid?: number;
+    customInitialCapEx?: number;
+    annualLandAppreciationPct?: number; // default 4.5%
+    grantSubsidyAnnualShare?: number; // annual grant drawdown
+  }
+): FiveYearProjectionResult {
+  const purchasePrice = options?.customPurchaseBid ?? property.financials.askingOrOpeningBid;
+  const initialCapEx = options?.customInitialCapEx ?? property.financials.estimatedCapExRehab;
+  const { survivingTotal } = calculateSurvivingLienExposure(property.liens);
+  const closingAndClearing = property.financials.estimatedClearingCosts || (survivingTotal + 3500);
+
+  // Total initial cash basis
+  const initialInvestmentBasis = Math.max(1, purchasePrice + initialCapEx + closingAndClearing);
+  const landAppreciationRate = (options?.annualLandAppreciationPct ?? 4.5) / 100;
+
+  // Annual land grant subsidy amortized (e.g., EQIP or CSP over 5 years)
+  const totalGrantPool = calculateTotalGrantFunding(property.eligibleLandGrants || []);
+  const annualGrantSubsidy = options?.grantSubsidyAnnualShare ?? Math.min(25000, Math.round(totalGrantPool / 5));
+
+  const yearByYear: CropYearProjection[] = [];
+  let cumulativeCashFlow = 0;
+  let breakEvenYear: number | null = null;
+  let fiveYearTotalGrossRevenue = 0;
+  let fiveYearTotalMaintenanceExpenses = 0;
+
+  let currentLandValue = property.financials.estimatedARV || (purchasePrice * 1.35);
+
+  for (let year = 1; year <= 5; year++) {
+    // 1. Calculate Crop Revenue and Direct Production Costs
+    let yearGrossCropRev = 0;
+    let yearCropProdCosts = 0;
+
+    for (const crop of crops) {
+      // Yield increases with maturity up to peak in year 4/5
+      const maturityMultiplier = Math.pow(1 + crop.annualYieldGrowthPct / 100, year - 1);
+      const priceMultiplier = Math.pow(1 + crop.annualPriceInflationPct / 100, year - 1);
+
+      const effectiveYieldPerAcre = crop.expectedYieldPerAcre * maturityMultiplier;
+      const effectivePrice = crop.pricePerUnit * priceMultiplier;
+      const totalUnitsHarvested = effectiveYieldPerAcre * crop.plantedAcres;
+
+      const cropGross = totalUnitsHarvested * effectivePrice;
+      const cropCosts = crop.annualProductionCostPerAcre * crop.plantedAcres * Math.pow(1 + 0.025, year - 1);
+
+      yearGrossCropRev += cropGross;
+      yearCropProdCosts += cropCosts;
+    }
+
+    const cropNetMargin = yearGrossCropRev - yearCropProdCosts;
+
+    // 2. Calculate Itemized Maintenance Costs with Inflation
+    const expenseInflation = Math.pow(1 + maintenance.annualExpenseInflationPct / 100, year - 1);
+    const baseMaintenanceSum =
+      maintenance.propertyTaxesAnnual +
+      maintenance.insuranceAndLiability +
+      maintenance.irrigationAndWaterPumping +
+      maintenance.soilAmendmentAndCompost +
+      maintenance.equipmentRepairsAndFuel +
+      maintenance.laborAndManagement +
+      maintenance.contingencyReserves;
+
+    const totalMaintenanceCosts = Math.round(baseMaintenanceSum * expenseInflation);
+
+    // 3. Subsidies & Net Operating Income
+    const subsidies = year <= 3 ? annualGrantSubsidy : Math.round(annualGrantSubsidy * 0.5); // Grants front-loaded
+    const netOperatingIncome = Math.round(cropNetMargin - totalMaintenanceCosts + subsidies);
+
+    // Debt service or property holding costs
+    const holdingCosts = Math.round((property.financials.holdingCostsAnnual || 4500) * Math.pow(1.02, year - 1));
+    const netCashFlow = netOperatingIncome - holdingCosts;
+
+    cumulativeCashFlow += netCashFlow;
+
+    // Land Appreciation Terminal Track
+    currentLandValue = Math.round(currentLandValue * (1 + landAppreciationRate));
+
+    // Annual ROI on Basis
+    const yearRoiPct = Number(((netCashFlow / initialInvestmentBasis) * 100).toFixed(2));
+
+    // Check break-even point
+    if (cumulativeCashFlow >= initialInvestmentBasis && breakEvenYear === null) {
+      const priorCumulative = cumulativeCashFlow - netCashFlow;
+      const deficit = initialInvestmentBasis - priorCumulative;
+      const fraction = netCashFlow > 0 ? deficit / netCashFlow : 1;
+      breakEvenYear = Number(((year - 1) + Math.min(0.99, Math.max(0.01, fraction))).toFixed(1));
+    }
+
+    fiveYearTotalGrossRevenue += yearGrossCropRev;
+    fiveYearTotalMaintenanceExpenses += totalMaintenanceCosts + yearCropProdCosts;
+
+    yearByYear.push({
+      year,
+      grossCropRevenue: Math.round(yearGrossCropRev),
+      totalProductionCosts: Math.round(yearCropProdCosts),
+      cropNetMargin: Math.round(cropNetMargin),
+      totalMaintenanceCosts,
+      landGrantSubsidiesReceived: subsidies,
+      netOperatingIncome,
+      debtServiceOrHoldingCosts: holdingCosts,
+      netCashFlow,
+      cumulativeCashFlow,
+      estimatedLandAppreciationValue: currentLandValue,
+      yearRoiPct
+    });
+  }
+
+  const fiveYearTotalNetCashFlow = cumulativeCashFlow;
+  const terminalLandEquity = currentLandValue;
+  // Total Net Profit = All Cumulative Cash Flows + Land Value Gain above Basis
+  const landGain = terminalLandEquity - purchasePrice;
+  const fiveYearNetProfit = fiveYearTotalNetCashFlow + landGain;
+
+  // 5-Year Total ROI % = (Net Profit / Initial Investment Basis) * 100
+  const fiveYearTotalROI = Number(((fiveYearNetProfit / initialInvestmentBasis) * 100).toFixed(1));
+
+  // Annualized Compound ROI (CAGR)
+  const totalReturnMultiple = (initialInvestmentBasis + fiveYearNetProfit) / initialInvestmentBasis;
+  const fiveYearAnnualizedROI = totalReturnMultiple > 0
+    ? Number(((Math.pow(totalReturnMultiple, 1 / 5) - 1) * 100).toFixed(1))
+    : 0;
+
+  return {
+    propertyId: property.id,
+    propertyTitle: property.title,
+    initialInvestmentBasis: Math.round(initialInvestmentBasis),
+    breakEvenYear,
+    fiveYearTotalGrossRevenue: Math.round(fiveYearTotalGrossRevenue),
+    fiveYearTotalMaintenanceExpenses: Math.round(fiveYearTotalMaintenanceExpenses),
+    fiveYearTotalNetCashFlow: Math.round(fiveYearTotalNetCashFlow),
+    fiveYearEstimatedTerminalValue: Math.round(currentLandValue),
+    fiveYearNetProfit: Math.round(fiveYearNetProfit),
+    fiveYearAnnualizedROI,
+    fiveYearTotalROI,
+    yearByYear
+  };
+}
+
+/**
+ * Builds sensible default crop inputs from the property's agronomic profile
+ */
+export function getDefaultCropInputs(property: InvestmentProperty): CropProjectionInput[] {
+  if (property.suitableCrops && property.suitableCrops.length > 0) {
+    return property.suitableCrops.slice(0, 3).map((crop, idx) => {
+      // Allocate acreage across top crops
+      const share = idx === 0 ? 0.6 : idx === 1 ? 0.25 : 0.15;
+      const plantedAcres = Math.max(1, Math.round(property.acreage * share * 10) / 10);
+
+      // Parse yield string if formatted like "14,000 lbs / acre" or "450 bushels / acre"
+      const numMatch = crop.estYieldPerAcre.replace(/,/g, '').match(/\d+/);
+      const expectedYield = numMatch ? parseInt(numMatch[0], 10) : 8000;
+      const isLbs = crop.estYieldPerAcre.toLowerCase().includes('lb');
+      const isBushel = crop.estYieldPerAcre.toLowerCase().includes('bushel');
+      const isTon = crop.estYieldPerAcre.toLowerCase().includes('ton');
+
+      const unit = isLbs ? 'lbs' : isBushel ? 'bushels' : isTon ? 'tons' : 'crates';
+      const pricePerUnit = isLbs
+        ? Number((crop.estGrossRevenuePerAcre / Math.max(1, expectedYield)).toFixed(2))
+        : isBushel
+        ? 14.5
+        : 4.5;
+
+      return {
+        cropName: crop.cropName,
+        plantedAcres,
+        expectedYieldPerAcre: expectedYield,
+        yieldUnit: unit,
+        pricePerUnit: Math.max(0.5, pricePerUnit),
+        annualYieldGrowthPct: 4.0,
+        annualPriceInflationPct: 2.5,
+        annualProductionCostPerAcre: Math.round(crop.estGrossRevenuePerAcre * 0.32)
+      };
+    });
+  }
+
+  // Fallback default
+  return [
+    {
+      cropName: 'Organic Specialty Crop',
+      plantedAcres: Math.max(2, Math.round(property.acreage * 0.7)),
+      expectedYieldPerAcre: 9500,
+      yieldUnit: 'lbs',
+      pricePerUnit: 2.85,
+      annualYieldGrowthPct: 4.5,
+      annualPriceInflationPct: 2.5,
+      annualProductionCostPerAcre: 5200
+    }
+  ];
+}
+
+/**
+ * Builds sensible default maintenance inputs from property scale and type
+ */
+export function getDefaultMaintenanceInputs(property: InvestmentProperty): MaintenanceExpenseInput {
+  const acres = property.acreage;
+  const price = property.financials.askingOrOpeningBid;
+
+  const propertyTaxes = Math.round(price * 0.012); // ~1.2% effective ag rate
+  const insurance = Math.round(Math.max(1200, acres * 85));
+  const waterPumping = Math.round(Math.max(1500, acres * 140));
+  const soilAmendment = Math.round(Math.max(1800, acres * 120));
+  const equipmentFuel = Math.round(Math.max(2200, acres * 160));
+  const labor = Math.round(Math.max(4000, acres * 350));
+  const reserves = Math.round(Math.max(1000, acres * 60));
+
+  return {
+    propertyTaxesAnnual: propertyTaxes,
+    insuranceAndLiability: insurance,
+    irrigationAndWaterPumping: waterPumping,
+    soilAmendmentAndCompost: soilAmendment,
+    equipmentRepairsAndFuel: equipmentFuel,
+    laborAndManagement: labor,
+    contingencyReserves: reserves,
+    annualExpenseInflationPct: 3.0
+  };
+}
+

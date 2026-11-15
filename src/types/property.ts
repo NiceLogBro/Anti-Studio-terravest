@@ -284,4 +284,90 @@ export interface ChatMessage {
   sources?: { title: string; url?: string; uri?: string }[];
 }
 
+export interface CropProjectionInput {
+  cropName: string;
+  plantedAcres: number;
+  expectedYieldPerAcre: number; // e.g. lbs, bushels, boxes
+  yieldUnit: string; // 'lbs', 'crates', 'bushels', 'tons'
+  pricePerUnit: number; // price received $/unit
+  annualYieldGrowthPct: number; // e.g. 3% maturity compounding
+  annualPriceInflationPct: number; // e.g. 2%
+  annualProductionCostPerAcre: number; // seed, fertilizer, drip irrigation, harvesting
+}
+
+export interface MaintenanceExpenseInput {
+  propertyTaxesAnnual: number;
+  insuranceAndLiability: number;
+  irrigationAndWaterPumping: number;
+  soilAmendmentAndCompost: number;
+  equipmentRepairsAndFuel: number;
+  laborAndManagement: number;
+  contingencyReserves: number;
+  annualExpenseInflationPct: number; // e.g. 3%
+}
+
+export interface CropYearProjection {
+  year: number;
+  grossCropRevenue: number;
+  totalProductionCosts: number;
+  cropNetMargin: number;
+  totalMaintenanceCosts: number;
+  landGrantSubsidiesReceived: number;
+  netOperatingIncome: number;
+  debtServiceOrHoldingCosts: number;
+  netCashFlow: number;
+  cumulativeCashFlow: number;
+  estimatedLandAppreciationValue: number;
+  yearRoiPct: number;
+}
+
+export interface FiveYearProjectionResult {
+  propertyId: string;
+  propertyTitle: string;
+  initialInvestmentBasis: number; // purchase price + closing/clearing + initial rehab/prep
+  breakEvenYear: number | null; // e.g. 2.4 or null
+  fiveYearTotalGrossRevenue: number;
+  fiveYearTotalMaintenanceExpenses: number;
+  fiveYearTotalNetCashFlow: number;
+  fiveYearEstimatedTerminalValue: number;
+  fiveYearNetProfit: number; // (Cumulative cash flows + terminal value) - initial investment
+  fiveYearAnnualizedROI: number; // 5-year CAGR/ROI %
+  fiveYearTotalROI: number; // Total net profit / initial investment * 100
+  yearByYear: CropYearProjection[];
+}
+
+export interface VerifiedLiveListing {
+  id: string;
+  title: string;
+  sourceUrl: string;
+  sourceDomain: string; // e.g. LandWatch, Lands of America, Crexi, LoopNet, County Auction
+  location: {
+    city: string;
+    county: string;
+    state: string;
+    regionName: string;
+  };
+  acreage: number;
+  askingOrOpeningBid: number;
+  estimatedMarketValue: number;
+  pricePerAcre: number;
+  distressType: string;
+  listingStatus: 'Active Auction' | 'Pre-Foreclosure' | 'Verified Active MLS' | 'Bank REO' | 'Off-Market Opportunity';
+  daysOnMarket: number;
+  waterRightsOrIrrigation: string;
+  soilSuitabilitySummary: string;
+  topRecommendedCrop: string;
+  estimatedGrossCropRevenue: number;
+  verificationAudit: {
+    verifiedByGeminiSearch: boolean;
+    verificationConfidence: number; // 0-100
+    countyDocketMatch: string;
+    lastPublicScanTimestamp: string;
+    scanSnippet: string;
+  };
+  sellerOrAgency: string;
+  contactOrDocketRef: string;
+}
+
+
 
