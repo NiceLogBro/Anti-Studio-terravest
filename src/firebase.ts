@@ -31,6 +31,7 @@ export interface FirestoreErrorInfo {
   };
 }
 
+/** Log a Firestore error with operation and current-user context, then rethrow it in a structured form. */
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
@@ -47,7 +48,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-// Test connection on boot
+/** Check Firestore connectivity with a server-backed read and warn when it is unreachable. */
 export async function testFirestoreConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));

@@ -30,6 +30,7 @@ interface LegitimacyReportModalProps {
   onOpenAdvisorChat?: (initialQuestion?: string) => void;
 }
 
+/** Display the parcel legitimacy, lien, soil, and research validation report. */
 export const LegitimacyReportModal: React.FC<LegitimacyReportModalProps> = ({
   report,
   property,

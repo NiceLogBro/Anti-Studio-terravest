@@ -29,6 +29,7 @@ interface NavbarProps {
   onOpenChat: () => void;
 }
 
+/** Render primary navigation and property-workspace actions. */
 export const Navbar: React.FC<NavbarProps> = ({
   properties,
   savedPropertyIds,

@@ -49,6 +49,7 @@ const PUBMED_AGRONOMY_CITATIONS: PubMedAgronomyCitation[] = [
   }
 ];
 
+/** Build a modeled soil and bioscience profile from a property's soil and location fields. */
 export function buildBioscienceSoilProfile(property: InvestmentProperty): BioscienceSoilProfile {
   const isTropical = property.state === 'HI' || property.state === 'FL';
   const cecBase = isTropical ? 24 : 19;
@@ -80,6 +81,9 @@ export function buildBioscienceSoilProfile(property: InvestmentProperty): Biosci
   };
 }
 
+/**
+ * Score parcel identifiers, liens, soil, and optional research results into a due-diligence report.
+ */
 export function validatePropertyLegitimacy(
   property: InvestmentProperty,
   externalSearchResults?: { title: string; url: string }[],

@@ -23,6 +23,7 @@ interface ChatbotDrawerProps {
   initialQuestion?: string;
 }
 
+/** Render the property-advisor chat drawer. */
 export const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({
   isOpen,
   onClose,

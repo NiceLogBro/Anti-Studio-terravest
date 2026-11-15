@@ -1,45 +1,113 @@
-import express, { Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { generate100Properties, getEligibleLandGrantsForProperty } from './src/utils/propertyGenerator';
 import { InvestmentProperty } from './src/types/property';
 import { validatePropertyLegitimacy } from './src/utils/deepResearchValidator';
 
+const JSON_BODY_LIMIT_BYTES = 10 * 1024 * 1024;
+const utf8Encoder = new TextEncoder();
 
-dotenv.config();
+interface ApiRequest {
+  body: any;
+}
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+interface ApiResponse {
+  status(code: number): ApiResponse;
+  json(body: unknown): ApiResponse;
+}
 
-const app = express();
-const PORT = 3000;
+type ApiHandler = (req: ApiRequest, res: ApiResponse) => unknown;
 
-app.use(express.json({ limit: '10mb' }));
+class ApiRouter {
+  private readonly handlers = new Map<string, ApiHandler>();
 
-// Shared Gemini SDK client
-const apiKey = process.env.GEMINI_API_KEY || '';
-const ai = apiKey
-  ? new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
+  get(path: string, handler: ApiHandler): void {
+    this.handlers.set(`GET ${path}`, handler);
+  }
+
+  post(path: string, handler: ApiHandler): void {
+    this.handlers.set(`POST ${path}`, handler);
+  }
+
+  async dispatch(method: string, path: string, body: any): Promise<{ status: number; body: unknown }> {
+    const handler = this.handlers.get(`${method.toUpperCase()} ${path}`);
+    if (!handler) {
+      return { status: 404, body: { success: false, error: 'Route not found.' } };
+    }
+
+    let status = 200;
+    let responseBody: unknown;
+    const response: ApiResponse = {
+      status(code) {
+        status = code;
+        return response;
       },
-    })
-  : null;
+      json(value) {
+        responseBody = value;
+        return response;
+      },
+    };
+
+    await handler({ body }, response);
+    return { status, body: responseBody };
+  }
+
+  async handleRequest(request: Request): Promise<Response> {
+    let body: any;
+    const contentType = request.headers.get('content-type') || '';
+    if (/^application\/json(?:\s*;|$)/i.test(contentType)) {
+      // Check the header first, then measure the body in case its size is undeclared or incorrect.
+      const contentLength = Number(request.headers.get('content-length'));
+      if (Number.isFinite(contentLength) && contentLength > JSON_BODY_LIMIT_BYTES) {
+        return Response.json({ success: false, error: 'Request body too large.' }, { status: 413 });
+      }
+
+      const rawBody = await request.text();
+      if (utf8Encoder.encode(rawBody).byteLength > JSON_BODY_LIMIT_BYTES) {
+        return Response.json({ success: false, error: 'Request body too large.' }, { status: 413 });
+      }
+
+      try {
+        body = rawBody ? JSON.parse(rawBody) : {};
+      } catch {
+        return Response.json({ success: false, error: 'Invalid JSON request body.' }, { status: 400 });
+      }
+    }
+
+    const result = await this.dispatch(request.method, new URL(request.url).pathname, body);
+    return Response.json(result.body, { status: result.status });
+  }
+}
+
+export const app = new ApiRouter();
+
+let ai: GoogleGenAI | null = null;
+let configuredApiKey: string | undefined;
+
+/** Configure the shared Gemini client; omit the key to disable AI-backed routes. */
+export function configureGemini(apiKey: string | undefined): void {
+  if (apiKey === configuredApiKey) return;
+
+  configuredApiKey = apiKey;
+  ai = apiKey
+    ? new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
+        },
+      })
+    : null;
+}
 
 // In-memory properties store seeded with 100 realistic properties
 const propertiesDatabase: InvestmentProperty[] = generate100Properties();
 
 // GET /api/properties
-app.get('/api/properties', (req: Request, res: Response) => {
+app.get('/api/properties', (req, res) => {
   res.json({ success: true, data: propertiesDatabase });
 });
-
-// Helper to sanitize Gemini response text
+// Remove optional Markdown fences so model output can be parsed as JSON.
 function cleanJsonText(raw: string): string {
   let cleaned = raw.trim();
   if (cleaned.startsWith('```json')) {
@@ -54,7 +122,7 @@ function cleanJsonText(raw: string): string {
 }
 
 // POST /api/analyze-custom-property
-app.post('/api/analyze-custom-property', async (req: Request, res: Response) => {
+app.post('/api/analyze-custom-property', async (req, res) => {
   try {
     const {
       address = '123 Country Road',
@@ -426,7 +494,7 @@ Ensure the output is strictly valid JSON without preamble or extra text.`;
 });
 
 // POST /api/ask-property-advisor
-app.post('/api/ask-property-advisor', async (req: Request, res: Response) => {
+app.post('/api/ask-property-advisor', async (req, res) => {
   try {
     const { propertyTitle, propertyContext, question, history = [] } = req.body;
 
@@ -492,7 +560,7 @@ Ground your answers using Google Search where appropriate.`;
 });
 
 // POST /api/deep-research/validate-property
-app.post('/api/deep-research/validate-property', async (req: Request, res: Response) => {
+app.post('/api/deep-research/validate-property', async (req, res) => {
   try {
     const { propertyId, propertyData } = req.body;
     let targetProperty = propertyData;
@@ -594,7 +662,7 @@ Confirm if there are any active fraud alerts, environmental moratoriums, or muni
 });
 
 // POST /api/chat - Multi-turn conversational interface
-app.post('/api/chat', async (req: Request, res: Response) => {
+app.post('/api/chat', async (req, res) => {
   try {
     const { messages = [], systemInstruction, propertyContext, model = 'gemini-3.8-flash' } = req.body;
 
@@ -678,7 +746,7 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 });
 
 // POST /api/maps/grounded-places - Maps Grounding with clickable links
-app.post('/api/maps/grounded-places', async (req: Request, res: Response) => {
+app.post('/api/maps/grounded-places', async (req, res) => {
   try {
     const { lat, lng, query = 'agricultural suppliers, USDA service center, farm cooperative' } = req.body;
     if (typeof lat !== 'number' || typeof lng !== 'number') {
@@ -735,31 +803,4 @@ app.post('/api/maps/grounded-places', async (req: Request, res: Response) => {
     console.error('Maps error:', err);
     res.status(500).json({ success: false, error: err.message || 'Error fetching grounded places.' });
   }
-});
-
-
-// Setup Vite middleware in dev or static files in production
-async function startServer() {
-  if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.resolve(__dirname, 'dist')));
-    app.get('*', (req: Request, res: Response) => {
-      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
-    });
-  } else {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  }
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`TerraYield AI server running at http://0.0.0.0:${PORT}`);
-  });
-}
-
-startServer().catch((err) => {
-  console.error('Fatal server start error:', err);
-  process.exit(1);
 });

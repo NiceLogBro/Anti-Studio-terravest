@@ -19,6 +19,7 @@ interface CustomParcelModalProps {
   onPropertyCreated: (newProp: InvestmentProperty) => void;
 }
 
+/** Collect parcel details and display the resulting custom-property analysis. */
 export const CustomParcelModal: React.FC<CustomParcelModalProps> = ({
   onClose,
   onPropertyCreated,

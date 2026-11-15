@@ -29,6 +29,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/** Provide Firebase authentication, saved-property, and validation state to the component tree. */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -213,6 +214,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+/** Read the authentication context; throws when called outside an `AuthProvider`. */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

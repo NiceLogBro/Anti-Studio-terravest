@@ -30,6 +30,7 @@ interface PropertyCardProps {
   onValidateLegitimacy?: (prop: InvestmentProperty) => void;
 }
 
+/** Render a property summary card with its key investment metrics and actions. */
 export const PropertyCard: React.FC<PropertyCardProps> = ({
   property,
   onSelect,

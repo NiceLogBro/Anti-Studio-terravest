@@ -22,6 +22,7 @@ interface ComparisonModalProps {
   onRemoveFromCompare: (propId: string) => void;
 }
 
+/** Compare the selected properties' investment, soil, and zoning metrics. */
 export const ComparisonModal: React.FC<ComparisonModalProps> = ({
   properties,
   onClose,

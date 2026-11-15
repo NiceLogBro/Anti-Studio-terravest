@@ -30,6 +30,7 @@ interface D3HeatmapOverlayProps {
   onHoverPoint?: (point: HeatPoint | null) => void;
 }
 
+/** Render a geographic D3 overlay for soil fertility or market appreciation. */
 export const D3HeatmapOverlay: React.FC<D3HeatmapOverlayProps> = ({
   properties,
   width,
@@ -267,6 +268,7 @@ interface D3HeatmapLegendProps {
   topHotspotName: string;
 }
 
+/** Render the color and value legend for the active heatmap configuration. */
 export const D3HeatmapLegend: React.FC<D3HeatmapLegendProps> = ({
   config,
   onChangeConfig,

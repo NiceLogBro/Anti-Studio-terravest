@@ -24,6 +24,7 @@ interface PrivateVaultDrawerProps {
   onSelectProperty: (property: InvestmentProperty) => void;
 }
 
+/** Render the signed-in user's private saved-property and validation drawer. */
 export const PrivateVaultDrawer: React.FC<PrivateVaultDrawerProps> = ({
   isOpen,
   onClose,

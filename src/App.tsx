@@ -39,6 +39,7 @@ import {
   Loader2
 } from 'lucide-react';
 
+/** Render the property discovery workspace and coordinate its search, map, and detail views. */
 export default function App() {
   const { user, saveValidation } = useAuth();
 

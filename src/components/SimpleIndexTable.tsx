@@ -23,6 +23,7 @@ interface SimpleIndexTableProps {
   onValidateLegitimacy?: (prop: InvestmentProperty) => void;
 }
 
+/** Render a compact sortable index of properties. */
 export const SimpleIndexTable: React.FC<SimpleIndexTableProps> = ({
   properties,
   startIndex,

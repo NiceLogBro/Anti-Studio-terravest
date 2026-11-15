@@ -99,6 +99,7 @@ const STATE_INDEX_PILLS = [
   { label: '🌾 Pennsylvania', value: 'PA' }
 ];
 
+/** Render property search and filter controls and report filter changes to the parent. */
 export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   filters,
   onChange,

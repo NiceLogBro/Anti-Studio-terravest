@@ -24,6 +24,7 @@ interface PropertyMapProps {
   onSelectProperty: (property: InvestmentProperty) => void;
 }
 
+/** Plot property locations and expose selection actions for map markers. */
 export const PropertyMap: React.FC<PropertyMapProps> = ({
   properties,
   onSelectProperty,

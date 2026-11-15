@@ -18,6 +18,7 @@ interface SavedPropertiesModalProps {
   onCompareAll: () => void;
 }
 
+/** List the signed-in user's saved properties and their stored notes. */
 export const SavedPropertiesModal: React.FC<SavedPropertiesModalProps> = ({
   savedProperties,
   onClose,

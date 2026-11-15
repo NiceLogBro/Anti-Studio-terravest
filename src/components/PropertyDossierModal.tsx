@@ -44,6 +44,7 @@ interface PropertyDossierModalProps {
 
 type TabType = 'overview' | 'business' | 'soil' | 'zoning' | 'grants' | 'underwriting' | 'advisor';
 
+/** Render the detailed property dossier, including underwriting and land-use data. */
 export const PropertyDossierModal: React.FC<PropertyDossierModalProps> = ({
   property,
   onClose,
