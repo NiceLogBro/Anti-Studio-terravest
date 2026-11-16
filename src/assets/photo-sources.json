@@ -1,0 +1,69 @@
+{
+  "hero": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/1668754795207-P02AOPJSFYRJVK1M2SBB/IMG_5564.jpeg",
+    "sourcePage": "https://powerwashingoahu.com/recentprojects",
+    "width": 2000,
+    "quality": 82
+  },
+  "crew": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/4e2a63ec-56f4-4f8a-9590-e4870c63c44e/Post+Office.JPG",
+    "sourcePage": "https://powerwashingoahu.com/wastereclaimoahu",
+    "width": 1100,
+    "quality": 78
+  },
+  "driveway": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/e234e31a-a010-4f8e-aa76-9a83b9174053/IMG_9501+%281%29.jpg",
+    "sourcePage": "https://powerwashingoahu.com/photo2",
+    "width": 1100,
+    "quality": 76
+  },
+  "siding": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/2fc180da-c59d-4959-b543-efaea548f6b9/IMG_9505+%281%29.jpg",
+    "sourcePage": "https://powerwashingoahu.com/photo2",
+    "width": 1100,
+    "quality": 76
+  },
+  "roof": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/ec901c86-f466-4be2-ad23-01a997d0bc4c/IMG_8755.jpeg",
+    "sourcePage": "https://powerwashingoahu.com/recentprojects",
+    "width": 1100,
+    "quality": 76
+  },
+  "garage": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/d1f95d64-8a70-45d4-ba69-c4223c9c9f00/IMG-5941.JPG",
+    "sourcePage": "https://powerwashingoahu.com/recentprojects",
+    "width": 1200,
+    "quality": 76,
+    "gamma": 1.3
+  },
+  "community": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/1e62fc5b-70d6-4cbf-b71f-2b0aa8ef16f0/IMG_0580.jpg",
+    "sourcePage": "https://powerwashingoahu.com/photo2",
+    "width": 1100,
+    "quality": 76
+  },
+  "stain": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/6a93bc46-8395-49e8-b692-9816b84b258b/IMG_0448.jpg",
+    "sourcePage": "https://powerwashingoahu.com/photo2",
+    "width": 1000,
+    "quality": 76
+  },
+  "work": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/cccce4fb-6d5e-4899-94b1-d6089500280c/IMG-1745.jpg",
+    "sourcePage": "https://powerwashingoahu.com/recentprojects",
+    "width": 1200,
+    "quality": 76
+  },
+  "finish": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/708a8455-de18-4db6-ba22-895d7237a0f4/IMG_9475.jpg",
+    "sourcePage": "https://powerwashingoahu.com/photo2",
+    "width": 1200,
+    "quality": 78
+  },
+  "cta": {
+    "url": "https://images.squarespace-cdn.com/content/v1/605d6a19a34415199bc8398a/398456c2-28cc-4ce1-9004-3fc72c2e875c/IMG_9317.jpg",
+    "sourcePage": "https://powerwashingoahu.com/photo2",
+    "width": 1200,
+    "quality": 74
+  }
+}
