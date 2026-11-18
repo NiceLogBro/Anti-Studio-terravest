@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoopNet Scraper + Crexi Scraper API Examples</title>
+  <meta name="description" content="GitHub examples for running a LoopNet scraper, a Crexi scraper, or both through Apify and exporting clean commercial real estate data.">
+  <link rel="canonical" href="https://boo-n.github.io/loopnet-crexi-listings-api/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="LoopNet Scraper + Crexi Scraper API Examples">
+  <meta property="og:description" content="Run LoopNet and Crexi scrapers through Apify and export clean commercial real estate data with public API examples.">
+  <meta property="og:url" content="https://boo-n.github.io/loopnet-crexi-listings-api/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/Boo-n/loopnet-crexi-listings-api/main/assets/cre-market-file-workflow-final.png">
+  <meta property="og:image:alt" content="LoopNet and Crexi listings merged into one broker-ready CRE market file">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LoopNet Scraper + Crexi Scraper API Examples">
+  <meta name="twitter:description" content="Run LoopNet and Crexi scrapers through Apify and export clean commercial real estate data with public API examples.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/Boo-n/loopnet-crexi-listings-api/main/assets/cre-market-file-workflow-final.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "LoopNet Scraper + Crexi Scraper API Examples",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "description": "Public API examples and workflows for turning LoopNet and Crexi commercial real estate listings into a clean market file through Apify.",
+    "url": "https://boo-n.github.io/loopnet-crexi-listings-api/",
+    "sameAs": [
+      "https://apify.com/kazkn/commercial-real-estate-brokerage-intel",
+      "https://github.com/Boo-n/loopnet-crexi-listings-api"
+    ]
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --line: #263247;
+      --accent: #22c55e;
+      --accent2: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #1e293b, var(--bg) 42%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    main { max-width: 980px; margin: 0 auto; padding: 56px 20px 64px; }
+    .eyebrow { color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: 13px; }
+    h1 { font-size: clamp(34px, 7vw, 70px); line-height: .98; margin: 12px 0 18px; max-width: 860px; }
+    p { color: var(--muted); font-size: 18px; max-width: 760px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 42px; }
+    a.button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      background: rgba(17, 24, 39, .84);
+      font-weight: 700;
+    }
+    a.button.primary { background: var(--accent); color: #04130a; border-color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(17, 24, 39, .76);
+      border-radius: 8px;
+      padding: 18px;
+      min-height: 148px;
+    }
+    .card h2 { margin: 0 0 8px; font-size: 18px; }
+    .card p { margin: 0; font-size: 15px; }
+    .code {
+      margin-top: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #020617;
+      padding: 18px;
+      overflow: auto;
+      color: #d1fae5;
+      font-size: 14px;
+    }
+    .footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
+    .footer a { color: var(--text); }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">LoopNet scraper + Crexi scraper API examples</div>
+    <h1>Two listing sources. One clean market file.</h1>
+    <p>
+      Pull public CRE listings, deduplicate cross-platform properties, normalize cap-rate fields,
+      and export a CSV, JSON, Excel, Google Sheets, or CRM-ready dataset.
+    </p>
+    <p>
+      This public hub contains integration examples, workflows, documentation, and sample output.
+      It does not contain the private Actor source code.
+    </p>
+    <div class="actions">
+      <a class="button primary" href="https://apify.com/kazkn/commercial-real-estate-brokerage-intel?fpr=8fp2od">Run the Apify Actor</a>
+      <a class="button" href="https://apify.com/kazkn/commercial-real-estate-brokerage-intel/pricing?fpr=8fp2od">View pricing</a>
+      <a class="button" href="https://apify.com/kazkn/commercial-real-estate-brokerage-intel/api/python?fpr=8fp2od">API docs</a>
+      <a class="button" href="https://youtu.be/TVAcUSzaS7w">Watch demo</a>
+      <a class="button" href="https://github.com/Boo-n/loopnet-crexi-listings-api">View examples</a>
+    </div>
+    <section class="grid">
+      <div class="card">
+        <h2>No copy-paste</h2>
+        <p>Replace manual LoopNet and Crexi spreadsheet work with one structured run.</p>
+      </div>
+      <div class="card">
+        <h2>Clean fields</h2>
+        <p>Address, asset class, price, square footage, cap rate, days on market, and source provenance.</p>
+      </div>
+      <div class="card">
+        <h2>Broker review</h2>
+        <p>Broker name, company, phone, and email when publicly exposed by the listing source.</p>
+      </div>
+    </section>
+    <pre class="code">{
+  "city": "Dallas",
+  "state": "TX",
+  "sourcesEnabled": ["loopnet", "crexi"],
+  "assetClasses": ["office", "retail", "industrial"],
+  "maxResultsPerSource": 1000,
+  "deduplicate": true,
+  "normalizeCapRate": true
+}</pre>
+    <div class="footer">
+      Built by <a href="https://apify.com/kazkn">KazKN</a>.
+      Data sources: <a href="https://www.loopnet.com">LoopNet</a> and <a href="https://www.crexi.com">Crexi</a>.
+    </div>
+  </main>
+</body>
+</html>

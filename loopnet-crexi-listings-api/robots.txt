@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://boo-n.github.io/loopnet-crexi-listings-api/sitemap.xml

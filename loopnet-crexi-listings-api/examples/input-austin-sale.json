@@ -1,0 +1,13 @@
+{
+  "city": "Austin",
+  "state": "TX",
+  "sourcesEnabled": ["loopnet", "crexi"],
+  "transactionTypes": ["sale"],
+  "assetClasses": ["office", "retail"],
+  "priceMin": 500000,
+  "priceMax": 5000000,
+  "maxResultsPerSource": 200,
+  "deduplicate": true,
+  "normalizeCapRate": true,
+  "includeListingDetails": false
+}
