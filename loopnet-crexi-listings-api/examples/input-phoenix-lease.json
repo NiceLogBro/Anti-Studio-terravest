@@ -1,0 +1,13 @@
+{
+  "city": "Phoenix",
+  "state": "AZ",
+  "sourcesEnabled": ["loopnet", "crexi"],
+  "transactionTypes": ["lease"],
+  "assetClasses": ["office", "industrial"],
+  "priceMin": 12000,
+  "priceMax": 250000,
+  "maxResultsPerSource": 250,
+  "deduplicate": true,
+  "normalizeCapRate": true,
+  "includeListingDetails": false
+}

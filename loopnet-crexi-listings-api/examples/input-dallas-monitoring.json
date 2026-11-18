@@ -1,0 +1,11 @@
+{
+  "city": "Dallas",
+  "state": "TX",
+  "sourcesEnabled": ["loopnet", "crexi"],
+  "transactionTypes": ["sale"],
+  "assetClasses": ["office", "retail", "industrial"],
+  "maxResultsPerSource": 1000,
+  "monitoringMode": true,
+  "deduplicate": true,
+  "normalizeCapRate": true
+}
